@@ -53,7 +53,7 @@ fig_dpi <- 400
 # =============================================================================
 # Primers (799F 5'-AACMGGATTAGATACCCKG-3', 1193R 5'-ACGTCATCCCCACCTTCC-3') were
 # removed from the 5' end of each read with cutadapt v4.9 before this step
-# (equivalent command in README.md). Reads from the same MiSeq run
+# (command in README.md). Reads from the same MiSeq run
 # that belong to another study are not part of this dataset, so a rerun learns
 # error rates from these samples only and may give very slightly different ASVs.
 if (run_dada2) {
