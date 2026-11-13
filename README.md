@@ -3,13 +3,15 @@ Tracking single-strain bacterial inoculants and 16S community assembly on outdoo
 
 # Inoculant persistence and community legacy in the tomato phyllosphere
 
+Analysis code for Batarseh et al., *FEMS Microbiology Letters* (submitted).
+
 Gnotobiotically germinated tomato seedlings (cv. Moneymaker) were dip-inoculated with one of eight rifampicin-resistant leaf bacteria, all eight together (SynCom), or buffer (MgCl₂), and grown outdoors. Focal strains were tracked by plating leaflets at three timepoints and the top leaf, and whole-shoot bacterial communities were profiled at harvest by 16S rRNA gene (V5–V7) amplicon sequencing.
 
 ## Contents
 
 | File | Description |
 |---|---|
-| `Balcony_analysis.R` | Single script: (optional) DADA2, read filtering, all statistics, Figures 1–5 and S2–S10, Supplementary Tables S1–S13 |
+| `Balcony_analysis.R` | Single script: (optional) DADA2, read filtering, all statistics, Figures 1–5 and S2–S9, Supplementary Tables S1–S13 |
 | `data/balcony_asv_table.rds` | ASV count table (66 plants + 2 extraction blanks) and SILVA v138.1 taxonomy |
 | `data/2024-10-15_Bacteria_Persistence.xlsx` | Leaflet plating at T1–T3: CFU g⁻¹, focal-strain detection, fungal presence |
 | `data/2026-10-28_Balcony_TopLeaf_scoring.xlsx` | Focal-strain detection on the top (youngest) leaf |
@@ -20,7 +22,7 @@ Raw reads: NCBI BioProject [PRJNA1556283](https://www.ncbi.nlm.nih.gov/bioprojec
 
 ## Running the analysis
 
-1. Install R (≥ 4.4) and the packages: `phyloseq` (Bioconductor), `vegan`, `permute`, `readxl`, `dplyr`, `tidyr`, `ggplot2`, `patchwork`, `openxlsx`, and `pairwiseAdonis`.
+1. Install R (≥ 4.4) and the packages: `phyloseq` (Bioconductor), `vegan`, `permute`, `readxl`, `dplyr`, `tidyr`, `ggplot2`, `patchwork`, `openxlsx`, and `pairwiseAdonis` (`devtools::install_github("pmartinezarbizu/pairwiseAdonis/pairwiseAdonis")`).
 2. Open R in this folder and run `source("Balcony_analysis.R")`.
 3. Results are written to `output/`: figures (PDF and PNG), `Supplementary_Tables_S1-S13.xlsx`, one CSV per table, `figure_legends.md` (legends with the statistics from the run) and `session_info.txt`.
 
