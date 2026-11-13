@@ -2,7 +2,7 @@
 # Inoculant persistence and community legacy in the tomato phyllosphere
 # Analysis code for Batarseh et al. (FEMS Microbiology Letters)
 #
-# Reproduces the statistics, Figures 1-5 and S2-S10, and Supplementary
+# Reproduces the statistics, Figures 1-5 and S2-S9, and Supplementary
 # Tables S1-S13 reported in the paper.
 #
 # How to run: put the input files in data/ (see README.md), set the working
@@ -227,20 +227,20 @@ filter_notes <- c(
           paste(bee_genera, collapse = ", "), median(filter_summary$pct_bee_gut), max(filter_summary$pct_bee_gut)),
   sprintf("Remaining reads rarefied to %d per plant (n = %d plants).", rare_depth, nsamples(ps)))
 
-# ---- Fig S10: rarefaction curves (filtered, unrarefied reads) -----------------
+# ---- Fig S3: rarefaction curves (filtered, unrarefied reads) -----------------
 rc_mat <- as(otu_table(ps_u), "matrix")
 if (taxa_are_rows(ps_u)) rc_mat <- t(rc_mat)
 rc_df <- rarecurve(rc_mat, step = 100, tidy = TRUE) %>%
   rename(sample_id = Site, reads = Sample, ASVs = Species) %>%
   mutate(inoculant = factor(inoc_from_id(sample_id), levels = inoc_levels))
 slope_100 <- 100 * rareslope(rc_mat, sample = rare_depth)   # new ASVs per 100 extra reads at the rarefaction depth
-figS10 <- ggplot(rc_df, aes(reads, ASVs, group = sample_id, colour = inoculant)) +
+figS3 <- ggplot(rc_df, aes(reads, ASVs, group = sample_id, colour = inoculant)) +
   geom_line(linewidth = 0.4, alpha = 0.8) +
   geom_vline(xintercept = rare_depth, linetype = 2, colour = "grey40") +
   scale_colour_manual(values = inoc_cols, labels = inoc_axis_labels, name = "Inoculum") +
   xlab("Reads sampled") + ylab("ASVs observed")
-save_fig(figS10, "FigS10_rarefaction_curves", w = 8, h = 5)
-add_legend("FigS10", "Rarefaction curves",
+save_fig(figS3, "FigS3_rarefaction_curves", w = 8, h = 5)
+add_legend("FigS3", "Rarefaction curves",
   paste0("ASV richness against the number of reads sampled for each plant (n = ", nsamples(ps_u), " plants), ",
          "after removal of blank-associated ASVs, insect endosymbiont and bee-gut genera, and before rarefaction. ",
          "The dashed line marks the rarefaction depth (", rare_depth, " reads). At this depth plants gained a median of ",
@@ -401,7 +401,7 @@ beta_tests <- function(dist, data, grp) {
 permanova_tab <- bind_rows(lapply(names(schemes), function(g) beta_tests(bray, meta, g)))
 keep_tab(permanova_tab, "permanova_by_scheme")
 
-# ---- Fig 2 and Fig S5: PCoA ---------------------------------------------------
+# ---- Fig 2 and Fig S6: PCoA ---------------------------------------------------
 eig     <- round(100 * ord$values$Relative_eig[1:2], 1)
 pcoa_df <- data.frame(ord$vectors[, 1:2], meta[rownames(ord$vectors), ])
 p_lab   <- permanova_tab %>% filter(test == "PERMANOVA overall")
@@ -416,7 +416,7 @@ plot_pcoa <- function(df, grp, eig) {
 fig2 <- plot_pcoa(pcoa_df, "persist_plant", eig) + plot_pcoa(pcoa_df, "persist_species", eig) +
   plot_annotation(tag_levels = "A")
 save_fig(fig2, "Fig2_PCoA_by_persistence", w = 12, h = 6)
-save_fig(plot_pcoa(pcoa_df, "persist_T3", eig), "FigS5_PCoA_by_T3_detection", w = 6.5, h = 6)
+save_fig(plot_pcoa(pcoa_df, "persist_T3", eig), "FigS6_PCoA_by_T3_detection", w = 6.5, h = 6)
 pl <- function(g) { x <- p_lab %>% filter(scheme == g); sprintf("R² = %.3f, p = %.3f", x$R2, x$p) }
 add_legend("Fig2", "Leaf bacterial community composition does not differ by focal-strain persistence",
   paste0("Principal coordinates analysis of Bray-Curtis dissimilarities (filtered, rarefied to ", rare_depth,
@@ -424,7 +424,7 @@ add_legend("Fig2", "Leaf bacterial community composition does not differ by foca
          "detected at >=2 of 3 timepoints (PERMANOVA ", pl("persist_plant"), "); (B) species-level persistence, ",
          "with SC09, SC13 and SC35 as non-persister species (", pl("persist_species"), "). Ellipses are 95% ",
          "confidence ellipses. ", nperm, " permutations."))
-add_legend("FigS5", "Community composition grouped by focal-strain detection at T3",
+add_legend("FigS6", "Community composition grouped by focal-strain detection at T3",
   paste0("Same ordination as Fig 2, grouped by detection of the focal strain at T3 (PERMANOVA ",
          pl("persist_T3"), ")."))
 
@@ -594,46 +594,34 @@ bar_df <- gen_mat %>%
   left_join(meta %>% select(sample_id, inoculant), by = "sample_id") %>%
   mutate(Genus = factor(Genus, levels = c(top9, "Other")))
 
-# ---- Fig S2 and Fig S3 ------------------------------------------------------
-figS2 <- ggplot(bar_df, aes(x = sample_id, y = Abundance, fill = Genus)) +
+# ---- Fig S5 -------------------------------------------------------------------
+figS5 <- ggplot(bar_df, aes(x = sample_id, y = Abundance, fill = Genus)) +
   geom_bar(stat = "identity") +
   facet_wrap(~inoc_lab(inoculant), scales = "free_x", labeller = label_parsed) +
   scale_fill_manual(values = genus_cols) +
   scale_x_discrete(labels = function(x) sub("^.*_", "", x)) +
   ylab("Relative Abundance") + xlab("Replicate plant") +
   guides(fill = guide_legend(ncol = 1)) + th_bar
-save_fig(figS2, "FigS2_genus_composition_per_plant", w = 10, h = 7)
-add_legend("FigS2", "Genus-level composition of each plant",
+save_fig(figS5, "FigS5_genus_composition_per_plant", w = 10, h = 7)
+add_legend("FigS5", "Genus-level composition of each plant",
   paste0("Relative abundance of the nine most abundant genera across all plants; all remaining genera are ",
          "grouped as Other (filtered and rarefied). Panels are inoculants: ", inoc_key(), "."))
 
-figS3 <- bar_df %>% group_by(inoculant, Genus) %>%
-  summarise(Abundance = sum(Abundance) / n_distinct(sample_id)) %>%
-  ggplot(aes(x = inoculant, y = Abundance, fill = Genus)) +
-  geom_bar(stat = "identity") +
-  scale_fill_manual(values = genus_cols) +
-  ylab("Mean Relative Abundance") + scale_x_inoc() + xlab("Inoculum") +
-  guides(fill = guide_legend(ncol = 1)) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1),
-        legend.position = "right", legend.text = element_text(size = 8))
-save_fig(figS3, "FigS3_genus_composition_mean_by_inoculant", w = 7.5, h = 5.5)
-add_legend("FigS3", "Mean genus-level composition by inoculant",
-  "Mean relative abundance of the nine most abundant genera per inoculant (same data as Fig S2).")
 
-# ---- Fig S4: PCoA coloured by dominant genus ---------------------------------
+# ---- Fig S7: PCoA coloured by dominant genus ---------------------------------
 dom_top <- intersect(names(genus_cols), unique(meta$dominant_genus))
 pcoa_df$dominant_genus <- factor(ifelse(meta[rownames(pcoa_df), "dominant_genus"] %in% dom_top,
                                         meta[rownames(pcoa_df), "dominant_genus"], "Other"),
                                  levels = c(dom_top, "Other"))
-figS4 <- ggplot(pcoa_df, aes(Axis.1, Axis.2, fill = dominant_genus, shape = persist_plant)) +
+figS7 <- ggplot(pcoa_df, aes(Axis.1, Axis.2, fill = dominant_genus, shape = persist_plant)) +
   geom_point(size = 4, colour = "grey20") +
   scale_fill_manual(values = genus_cols[c(dom_top, "Other")], name = "Dominant genus") +
   scale_shape_manual(values = c(Control = 21, `Not persistent` = 24, Persistent = 22), name = NULL) +
   guides(fill = guide_legend(override.aes = list(shape = 21), ncol = 2)) +
   labs(x = paste0("PCoA1 (", eig[1], "%)"), y = paste0("PCoA2 (", eig[2], "%)")) +
   th_pcoa + theme(legend.box = "vertical")
-save_fig(figS4, "FigS4_PCoA_by_dominant_genus", w = 8, h = 7)
-add_legend("FigS4", "PCoA clusters track which genus dominates each plant, not persistence",
+save_fig(figS7, "FigS7_PCoA_by_dominant_genus", w = 8, h = 7)
+add_legend("FigS7", "PCoA clusters track which genus dominates each plant, not persistence",
   paste0("Same ordination as Fig 2, with points filled by the most abundant genus in each plant and shaped ",
          "by plant-level persistence. Clusters correspond to Curtobacterium-dominated, Serratia-dominated and ",
          "more even communities; balcony block does not explain them (see Table S10)."))
@@ -857,7 +845,7 @@ trait_tests <- bind_rows(lapply(names(trait_vars), function(v) {
 }))
 keep_tab(trait_tests, "plant_traits")
 
-figS6 <- traits %>%
+figS4 <- traits %>%
   pivot_longer(all_of(names(trait_vars)), names_to = "trait", values_to = "value") %>%
   mutate(trait = factor(trait_vars[trait], levels = trait_vars)) %>%
   filter(!is.na(value)) %>%
@@ -867,9 +855,9 @@ figS6 <- traits %>%
   facet_wrap(~trait, scales = "free_y") +
   scale_fill_manual(values = inoc_cols) +
   scale_x_inoc() + xlab("Inoculum") + ylab(NULL) + th_box + th_strip
-save_fig(figS6, "FigS6_plant_traits", w = 9.5, h = 8)
+save_fig(figS4, "FigS4_plant_traits", w = 9.5, h = 8)
 tt <- setNames(trait_tests$ANOVA_inoculant_p, trait_tests$trait)
-add_legend("FigS6", "Inoculation did not affect tomato growth or flowering",
+add_legend("FigS4", "Inoculation did not affect tomato growth or flowering",
   paste0("Plant height, combined plant and stem fresh weight, flower clusters and open flowers at the end of the ",
          "experiment (n = ", nrow(traits), " plants). Two-way ANOVA (inoculant + block), inoculant effect: ",
          paste(sprintf("%s p = %.2f", names(tt), tt), collapse = "; "), "."))
@@ -902,8 +890,8 @@ fung_tests <- data.frame(
         cmh_all$p.value, cmh_noSyn$p.value, rho_fp$p.value))
 keep_tab(fung_tests, "fungal_tests")
 
-# ---- Fig S7 -------------------------------------------------------------------
-figS7 <- fung_inoc %>%
+# ---- Fig S9 -------------------------------------------------------------------
+figS9 <- fung_inoc %>%
   mutate(focal = factor(ifelse(focal == 1, "Focal strain detected", "Focal strain not detected"),
                         levels = c("Focal strain not detected", "Focal strain detected"))) %>%
   group_by(Sampling_Timepoint, focal) %>%
@@ -917,8 +905,8 @@ figS7 <- fung_inoc %>%
                                "Focal strain detected" = okabe[["blue"]]), name = NULL) +
   xlab("Sampling timepoint") + ylab("Leaflets with fungi on plates (%)") +
   theme(legend.position = "bottom")
-save_fig(figS7, "FigS7_fungal_presence_vs_focal_detection", w = 6, h = 5)
-add_legend("FigS7", "Fungi were less often recovered from leaflets where the focal strain was detected",
+save_fig(figS9, "FigS9_fungal_presence_vs_focal_detection", w = 6, h = 5)
+add_legend("FigS9", "Fungi were less often recovered from leaflets where the focal strain was detected",
   paste0("Percentage of leaflet samples from inoculated plants with fungal growth on the plates, split by whether ",
          "the focal strain was re-isolated from the same sample (mean +/- binomial SE). Cochran-Mantel-Haenszel ",
          "test stratified by timepoint: common OR = ", sprintf("%.2f", cmh_all$estimate), ", p = ",
@@ -946,7 +934,7 @@ keep_tab(cfu %>%
                      n_zero = sum(CFU_g == 0, na.rm = TRUE)) %>%
            ungroup() %>% mutate(medium = gsub("'", "", medium)), "cfu_summary")
 
-figS9 <- ggplot(cfu, aes(Sampling_Timepoint, CFU_g + 1)) +
+figS2 <- ggplot(cfu, aes(Sampling_Timepoint, CFU_g + 1)) +
   geom_line(aes(group = Isolate), colour = "grey65", linewidth = 0.4) +
   geom_point(aes(fill = factor(focal, levels = c(0, 1))), shape = 21, size = 1.8, colour = "grey20") +
   facet_grid(medium ~ inoc_lab(inoculant), labeller = label_parsed) +
@@ -958,8 +946,8 @@ figS9 <- ggplot(cfu, aes(Sampling_Timepoint, CFU_g + 1)) +
                     name = "Focal strain on KBHA-rif", drop = FALSE) +
   xlab("Sampling timepoint") + ylab("CFU per g leaf tissue") +
   th_strip + theme(strip.text.x = element_text(size = 7), legend.position = "bottom")
-save_fig(figS9, "FigS9_CFU_per_plant_over_time", w = 14, h = 6)
-add_legend("FigS9", "Culturable bacterial densities on inoculated leaflets over time",
+save_fig(figS2, "FigS2_CFU_per_plant_over_time", w = 14, h = 6)
+add_legend("FigS2", "Culturable bacterial densities on inoculated leaflets over time",
   paste0("Colony-forming units per gram of leaf tissue from one lower leaflet per plant at T1 (2024-08-10), ",
          "T2 (2024-08-25) and T3 (2024-09-08), on KBHA (top) and KBHA-rifampicin (bottom). All colonies were ",
          "counted regardless of morphology, so counts include non-focal bacteria. Lines join samples from the ",
@@ -1042,7 +1030,7 @@ for (tn in names(supp_layout)) {
 }
 openxlsx::saveWorkbook(wb, file.path(out_dir, "Supplementary_Tables_S1-S13.xlsx"), overwrite = TRUE)
 
-legend_order <- c("Fig1", "Fig2", "Fig3", "Fig4", "Fig5", paste0("FigS", 2:10))
+legend_order <- c("Fig1", "Fig2", "Fig3", "Fig4", "Fig5", paste0("FigS", 2:9))
 writeLines(c("# Figure titles and legends", "",
              paste0("Generated ", Sys.Date(), " (", nperm, " permutations). Statistics are filled in from this run."), "",
              "## Data processing", "", paste("-", filter_notes), "",
